@@ -16,3 +16,5 @@ Expermentation history:
 
 * Using html/css injection to achive full realtime, scalable, textured 3d
 	[![Html 3d box](previous_versions_backup/html_cube.png)](https://studio.code.org/projects/applab/Jr_N04FSL0HVyhxxnKf9P3FcXmqtRwzRgldz2xJG7PE)
+* Basic world rendering in html/css
+	[![Html 3d box](previous_versions_backup/html_world.png)](https://studio.code.org/projects/applab/ur6rnBFjvSWCdu-53oaAG_AwpGEp0djXoXIDVilXoeM)
