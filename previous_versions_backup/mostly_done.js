@@ -41,7 +41,7 @@ readRecords("users", {uuid: UserId}, function(value){
   userPerspective=JSON.parse(lastKnownUsers.settings || "{}").userPerspective ;
   setStyle("super_world", 'perspective: '+userPerspective+'px; position: relative; overflow: hidden; width: 100%; height: 100%; background: #87CEEB; margin: 0px');
   
-  UserId=readRecords.is_simple == true;
+  hyperSimple=readRecords.is_simple == true;
 });
 
 
