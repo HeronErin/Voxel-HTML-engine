@@ -1,17 +1,17 @@
-// ||   / /                              //   ) )                   //  ) )
-// ||  / /  ___              ___     // //         __      ___   __//__  __  ___
-// || / / //   ) ) \\ / /  //___) ) // //        //  ) ) //   ) ) //      / /
-// ||/ / //   / /   \/ /  //       // //        //      //   / / //      / /
-// |  / ((___/ /    / /\ ((____   // ((____/ / //      ((___( ( //      / /
+// ||   / /                              //   ) )                   //  ) )      
+// ||  / /  ___              ___     // //         __      ___   __//__  __  ___ 
+// || / / //   ) ) \\ / /  //___) ) // //        //  ) ) //   ) ) //      / /    
+// ||/ / //   / /   \/ /  //       // //        //      //   / / //      / /     
+// |  / ((___/ /    / /\ ((____   // ((____/ / //      ((___( ( //      / /               
 
 // Github: https://github.com/HeronErin/Voxel-HTML-engine
 
 // Forgive the spaghetti code, code.org is not a great development enviroment.
 // This 'game engine' is based entirly on passing off the job of rendering to
-// the browser engine, and relies on css 3d transforms. For added speed all
-// unneeded block faces are culled before being rendered.
+// the browser engine, and relies on css 3d transforms. For added speed all 
+// unneeded block faces are culled before being rendered. 
 
-// The game also supports perlin noise 3d generation, basic block collision,
+// The game also supports perlin noise 3d generation, basic block collision, 
 // raycast based block placement, world saving, an exploit on code.org that
 // allows for resizing the game window, and not at a horrible preformence cost!
 
@@ -25,6 +25,8 @@
 // Otherwise perlin noise and level saving will not be functional
 
 
+var UserId = getUserId().replace(/\//g, "SLASH");
+
 
 // Screen settings
 var width= 320, height=450;
@@ -34,12 +36,12 @@ var hyperSimple = false;
 
 var lastKnownUsers = {};
 var lastSpace = 0;
-readRecords("users", {uuid: getUserId()}, function(value){
+readRecords("users", {uuid: UserId}, function(value){
   lastKnownUsers = value[0] || {};
   userPerspective=JSON.parse(lastKnownUsers.settings || "{}").userPerspective ;
   setStyle("super_world", 'perspective: '+userPerspective+'px; position: relative; overflow: hidden; width: 100%; height: 100%; background: #87CEEB; margin: 0px');
-
-  hyperSimple=readRecords.is_simple == true;
+  
+  UserId=readRecords.is_simple == true;
 });
 
 
@@ -68,7 +70,7 @@ function testId(id){return setParent("test", id);}
 
 var Breg;
 
-// Bring block gen funcs into global scope
+// Bring block gen funcs into global scope 
 var grassBlock, stoneBlock, writePerspective, dirtBlock;
 var BLOCKS;
 
@@ -116,7 +118,7 @@ function disableGroupBtn(ids){
   }, 750);
 }
 function enableGroupBtn(ids){
-
+  
   for (var i =0; i < ids.length; i++){
     setParent(ids[i], "super_world");
     // setStyle(ids[i], baseElementCss[ids[i]] + "opacity: 1");
@@ -161,59 +163,59 @@ var lastDisplayedBlock;
 
 // Keep pressing up to date
 onEvent("mainGame", "keydown", function(event) {
-	if (world.pressKey) if (world.pressKey(event.key)) return;
-	pressing[event.key] = true;
-
-	if ("123456789".includes(event.key)){
-	  if (lastSel) _resetSel();
-	  lastSel=undefined;
+  if (world.pressKey) if (world.pressKey(event.key)) return;
+  pressing[event.key] = true;
+  
+  if ("123456789".includes(event.key)){
+    if (lastSel) _resetSel();
+    lastSel=undefined;
     if (event.key*1 < BLOCKS.length)
       if (BLOCKS[event.key*1])
         player.currentBlock=event.key*1;
-	}
-	if (event.key=="Enter"&&lastSel!=undefined){
-	  if (player.currentBlock < BLOCKS.length){
-
-	    var func = BLOCKS[player.currentBlock];
-	    if (func){
-	      console.log([lastSelP[3], lastSelP[4], lastSelP[5]]);
-	      var id = func(lastSelP[3], lastSelP[4], lastSelP[5]);
-	      SV(id);
-	      types[id] = player["currentBlock"];
-
-	    };
-	    _resetSel();
+  }
+  if (event.key=="Enter"&&lastSel!=undefined){
+    if (player.currentBlock < BLOCKS.length){
+      
+      var func = BLOCKS[player.currentBlock];
+      if (func){
+        console.log([lastSelP[3], lastSelP[4], lastSelP[5]]);
+        var id = func(lastSelP[3], lastSelP[4], lastSelP[5]);
+        SV(id);
+        types[id] = player["currentBlock"];
+      
+      };
+      _resetSel();
       types[id] = player.currentBlock;
+      
+    }
+  }
+  
+  if (event.key=="Del"&&lastSel!=undefined){
+    
+    if (blockExists(lastSelP[0], lastSelP[1], lastSelP[2])){
+      var id = "B_"+lastSelP[0]+"_"+lastSelP[1]+"_"+lastSelP[2];
+     
+      decullBlockNeighbors(lastSelP[0], lastSelP[1], lastSelP[2]);
+      delete world.block[id];
+      delete types[id];
+      
+      deleteElement(id); 
+      _resetSel();
+    }
+  }
+  
 
-	  }
-	}
-
-	if (event.key=="Del"&&lastSel!=undefined){
-
-	  if (blockExists(lastSelP[0], lastSelP[1], lastSelP[2])){
-	    var id = "B_"+lastSelP[0]+"_"+lastSelP[1]+"_"+lastSelP[2];
-
-	    decullBlockNeighbors(lastSelP[0], lastSelP[1], lastSelP[2]);
-	    delete world.block[id];
-	    delete types[id];
-
-	    deleteElement(id);
-	    _resetSel();
-	  }
-	}
-
-
-
-
+  
+  
 });
 onEvent("mainGame", "keyup", function(event) {
-	pressing[event.key] = false;
+  pressing[event.key] = false;
   if (player.gamemode == 0 && event.key == " " && Date.now()-lastSpace > 25){
-
+    
     if (Date.now()-lastSpace < 250){
       player.isFlying = !player.isFlying;
     }
-
+    
     lastSpace = Date.now();
   }
 });
@@ -245,9 +247,9 @@ function _block(x, y, z, templ, B){
   // var cx = Math.floor(x/16), cz= Math.floor(z/16);
   // var cid = "C_"+cx+"_"+cz;
   // if (!testId(cid)){
-
+    
   // }
-
+  
   var id = "B_"+x+"_"+y+"_"+z + ((!B) ? "" : B )
   if (testId(id)) return id;
   write(('<div id="{id}" style="'+styleForBlock(x, y, z)+'; opacity .1;">'+templ+'</div>').replace(/{id}/g, id));
@@ -258,12 +260,12 @@ function _block(x, y, z, templ, B){
   return id;
 }
 function decullBlockNeighbors(x, y, z){
-  if (testId("B_"+(x-1)+"_"+y+"_"+z+"_E")) showElement("B_"+(x-1)+"_"+y+"_"+z+"_E");
-  if (testId("B_"+(x+1)+"_"+y+"_"+z+"_W")) showElement("B_"+(x+1)+"_"+y+"_"+z+"_W");
-  if (testId("B_"+x+"_"+y+"_"+(z+1)+"_N")) showElement("B_"+x+"_"+y+"_"+(z+1)+"_N");
-  if (testId("B_"+x+"_"+y+"_"+(z-1)+"_S")) showElement("B_"+x+"_"+y+"_"+(z-1)+"_S");
-  if (testId("B_"+x+"_"+(y-1)+"_"+z+"_U")) showElement("B_"+x+"_"+(y-1)+"_"+z+"_U");
-  if (testId("B_"+x+"_"+(y+1)+"_"+z+"_D")) showElement("B_"+x+"_"+(y+1)+"_"+z+"_D");
+  if (testId("B_"+(x-1)+"_"+y+"_"+z+"_E")) showElement("B_"+(x-1)+"_"+y+"_"+z+"_E"); 
+  if (testId("B_"+(x+1)+"_"+y+"_"+z+"_W")) showElement("B_"+(x+1)+"_"+y+"_"+z+"_W"); 
+  if (testId("B_"+x+"_"+y+"_"+(z+1)+"_N")) showElement("B_"+x+"_"+y+"_"+(z+1)+"_N"); 
+  if (testId("B_"+x+"_"+y+"_"+(z-1)+"_S")) showElement("B_"+x+"_"+y+"_"+(z-1)+"_S"); 
+  if (testId("B_"+x+"_"+(y-1)+"_"+z+"_U")) showElement("B_"+x+"_"+(y-1)+"_"+z+"_U"); 
+  if (testId("B_"+x+"_"+(y+1)+"_"+z+"_D")) showElement("B_"+x+"_"+(y+1)+"_"+z+"_D"); 
 }
 function decullBlock(x, y, z){
   var id = "B_"+x+"_"+y+"_"+z;
@@ -287,7 +289,7 @@ writePerspective = function(x, y, z, rx, ry, ec, ew){
 
 
 
-// Blocks are stored as html elements with the world element being the parrent.
+// Blocks are stored as html elements with the world element being the parrent. 
 
 // Block IDs are in this template B_{X}_{Y}_{Z}
 
@@ -315,7 +317,7 @@ var StoneBlockTemplate = BlockTemplate.replace(
 );
 var DirtBlockTemplate = BlockTemplate.replace(
   /{img}/g,
-  ( !hyperSimple ? '<img src="https://github.com/HeronErin/Voxel-HTML-engine/blob/main/imgs/dirt.png?raw=true" style="image-rendering: pixelated; position:relative; left: -5px; top: -5px; border:none, outline: none; width: 24px; height: 24px;"/> ' :
+  ( !hyperSimple ? '<img src="https://github.com/HeronErin/Voxel-HTML-engine/blob/main/imgs/dirt.png?raw=true" style="image-rendering: pixelated; position:relative; left: -5px; top: -5px; border:none, outline: none; width: 24px; height: 24px;"/> ' : 
   "<div style='width: 100%; height: 100%; background: #5d3f00'></div>")
 );
 var SelTemplate = ""+
@@ -342,7 +344,7 @@ stoneBlock= function(x, y, z, B){
   return t;
 };
 dirtBlock= function(x, y, z, B){
-
+  
   var t = _block(x, y, z, DirtBlockTemplate, B);
   types[t] = 3;
   return t;
@@ -420,20 +422,20 @@ var lastSel, lastSelP;
 
 function _resetSel(){
     deleteElement("B_"+lastSelP[0]+"_"+lastSelP[1]+"_"+lastSelP[2]+"_SO");
-    deleteElement(lastSel);
+    deleteElement(lastSel); 
     lastSel = undefined;
 }
 var vy=0;
 function main(){
-  // Create initial world.
-
-
-
-
+  // Create initial world. 
+  
+  
+  
+  
   // Testing will now work
   write("<div id='test'></div>");
   if (testId("viewport")) deleteElement("viewport")
-
+  
   write('<div id="viewport" style="overflow: visible;  height: '+height+'px; width: '+width+'px; margin: 0px">'+
     '<div id="super_world" style="perspective: '+userPerspective+'px; position: relative; overflow: hidden; width: 100%; height: 100%; background: #87CEEB; margin: 0px">'+
       '<div id="camera" style="overflow: visible; position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; transform: translate3d(0px, 0px, 400px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) skewX(0deg) skewY(0deg);">'+
@@ -442,11 +444,11 @@ function main(){
       '</div>'+
     '</div>'+
   '</div>');
-
+  
   if (world.world_get) world.world_get();
+  
 
-
-
+  
   // stoneBlock(0, 0, 0);
 
 
@@ -455,37 +457,37 @@ function main(){
   mainInterval = setInterval(function(){
     var deltaTime = Date.now()-lastTime;
     lastTime = Date.now();
-
+    
     // if (!(pressing.w || pressing.s || pressing.a || pressing.d || pressing.Shift || pressing[" "] || pressing.Left || pressing.Right || pressing.Up || pressing.Down))
     //   return;
     if (!world.do_player) return world.tick_player();
-
+    
     var cy = Math.cos(player.ry);
     var sy = Math.sin(player.ry);
-
+    
     // Change in pos coord
     var dx = 0;
     var dz = 0;
-
+    
     if (pressing.w) dz+=deltaTime/5;
     if (pressing.s) dz-=deltaTime/5;
     if (pressing.a) dx+=deltaTime/5;
     if (pressing.d) dx-=deltaTime/5;
-
+    
     // Pythagerian threarum stuff to correct movement speed if going diagonal
     if ((pressing.w || pressing.s) && (pressing.a || pressing.d)){
       dz = dz/Math.abs(dz) * Math.sqrt(deltaTime/5);
       dx = dx/Math.abs(dx) * Math.sqrt(deltaTime/5);
     }
-
+    
     var bx = Math.floor(player.x/24), by = Math.floor(player.y/-24) - 1, bz = Math.round(player.z/24);
-
-
+    
+    
     // See https://academo.org/demos/rotation-about-point/
     // Makes sure player is going in direction they are facing
     var px=-(dx * cy - dz * sy);
     var pz=-(dz * cy + dx * sy);
-
+    
     // Handle y movement
     var py=0;
     if (player.isFlying || player.gamemode == 2){
@@ -497,12 +499,12 @@ function main(){
       }
       // 10 blocks per secound max downward with a downwards acceleration of 6 blocks per secound ^2
       vy= Math.max(-24*10, vy-deltaTime/1000*24*6);
-
+      
       py-=vy*deltaTime/1000;
     }
 
 
-    // Collision logic
+    // Collision logic    
     if (player.gamemode != 2){
       // If the player somehow got in a block PUSH THEM OUT
       if (blockExists(bx, by, bz)){
@@ -515,48 +517,48 @@ function main(){
         if (blockExists(bx+vecx, by, bz)) px = 0;
         if (blockExists(bx, by-vecy, bz)) {py = 0;vy=0;}
         if (blockExists(bx, by, bz+vecz)) pz = 0;
-
-
+        
+        
       }
     }
     player.x+=px;
     player.y+=py;
     player.z+=pz;
-
-
+    
+    
     // Rotation is just adding. Units is radians, makes js math faster
-
+    
     if (pressing.Left)  player.ry-=deltaTime/750;
     if (pressing.Right) player.ry+=deltaTime/750;
-
+    
     if (pressing.Up)  player.rx +=deltaTime/1500;
     if (pressing.Down) player.rx-=deltaTime/1500;
-
+    
     // Apply player changes to screen
     writePerspective(player.x, player.y, player.z, player.rx, player.ry, "", "");
-
-
+    
+    
     // Spectator has no need for block placement/breaking
     if (player.gamemode == 2) return;
-
+    
     if (lastDisplayedBlock != player.currentBlock){
       if (lastDisplayedBlock!=undefined) deleteElement("B_999_999_999_S");
-
+      
       var func = BLOCKS[player.currentBlock];
       func(999, 999, 999, "_S");
       setStyle("B_999_999_999_S", "overflow: visible; position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; transform: translate3d("+(width*0.1875)+"px, -113px, 180px) rotateY(45deg) rotateX(-25deg) rotateZ(-35deg)");
       setParent("B_999_999_999_S", "super_world");
-
+      
       lastDisplayedBlock=player.currentBlock;
     }
-
-
+    
+    
     var pos = raycast();
     // console.log(pos);
-
+    
     // Use a different id format so it wont interfear with other stuff (like face culling)
     var id = (!pos) ? undefined : "B_"+pos[3]+"_"+pos[4]+"_"+pos[5]+"_SX";
-
+  
     if (id != lastSel){
       // console.log("update sel")
       if (lastSel != undefined) {
@@ -564,17 +566,17 @@ function main(){
       }
       if (pos && !blockExists(pos[3], pos[4], pos[5])){
         lastSelP=pos;
-
+        
         var func = BLOCKS[player.currentBlock];
         func(pos[3], pos[4], pos[5], "_SX");
         lastSel=id;
         _block(pos[0], pos[1], pos[2], SelTemplate, "_SO");
 
-
-
+        
+        
       }
-
-
+      
+      
     }
   }, 50);
 }
@@ -588,25 +590,25 @@ function title(goto){
   var lastRot = 0;
   var rot = 0;
   var animate = ";transition-timing-function: linear;transition: transform 5s; transform-origin: 0px 0px 0px;";
-
+  
   var defaultRotPoint = [-71, -79, 59, -0.684, -5.433];
   var rotPoint = defaultRotPoint;
-
+  
   var reviewIds = [];
-
+  
   var superflatRotPoint = [-24*15, -500, -24*15, -0.684, -4];
   function defaultRotSetup(){
     reviewIds.push(grassBlock(0, 0, 0));
     reviewIds.push(grassBlock(0, 0, -1));
     reviewIds.push(grassBlock(-1, 0, 0));
     reviewIds.push(grassBlock(-1, 0, -1));
-
+    
     reviewIds.push(stoneBlock(0, -1, 0));
     reviewIds.push(stoneBlock(0, -1, -1));
     reviewIds.push(stoneBlock(-1,-1, 0));
     reviewIds.push(stoneBlock(-1,-1, -1));
   }
-
+  
   function superflatSetup(){
     for (var x = -5; x < 5; x++){
       for (var z = -5; z < 5; z++){
@@ -617,8 +619,8 @@ function title(goto){
       }
     }
   }
-
-
+  
+  
   var perlinRotPoint = [-24*15, -500, -24*15, -0.684, -4];
   var perlineTimeout;
   function perlinSetup(){
@@ -636,10 +638,10 @@ function title(goto){
     handleX(-7);
 
   }
-
-
+  
+  
   function changePreview(func){
-
+    
     for (var i = 0; i < reviewIds.length; i++){
       deleteElement(reviewIds[i]);
     }
@@ -647,21 +649,21 @@ function title(goto){
     writePerspective(rotPoint[0], rotPoint[1], rotPoint[2], rotPoint[3], rotPoint[4], "", ";rotateY("+rot+"deg);");
     func();
   }
-
+  
   world = {"do_player": false, "world_get": function(){
-
-
-
+        
+        
+        
         writePerspective(defaultRotPoint[0], defaultRotPoint[1], defaultRotPoint[2], defaultRotPoint[3], defaultRotPoint[4], "", ";rotateY(360deg);");
         defaultRotSetup();
-
+        
         write("<img id='logo' src='https://raw.githubusercontent.com/HeronErin/Voxel-HTML-engine/main/imgs/logo/full.png' style='overflow: visible; position: absolute; width: 100% ' />");
         write('<div id="loadingtext" style="overflow: visible; position: absolute; top: 200px; width: 100%;text-align: center;color:white;font-size:1.4em;"> Loading...<br />If this takes too long, please refresh</div>')
         setParent("logo", "super_world");
         setParent("loadingtext", "super_world");
         var settingsScreen;
-
-        readRecords("users", {uuid: getUserId()}, function(value_){
+        
+        readRecords("users", {uuid: UserId}, function(value_){
           deleteElement("loadingtext");
           var value=JSON.parse((value_[0] || {}).settings ||"{}");
           console.log(["got", value_])
@@ -669,29 +671,29 @@ function title(goto){
           height= value.height|| 450;
           userPerspective = value.userPerspective || 400;
           doCenter = value.doCenter==true;
-
+          
           hyperSimple = (value_[0]||{}).is_simple==true;
-
+          
           resetScreenSize();
-
-
+          
+          
           function apply(){
               width = getText("pw")*1;
               height = getText("ph")*1;
               userPerspective=getText("renderd")*1;
               doCenter= getChecked("pcenter");
               hyperSimple = getChecked("hypersim");
-
-              // setKeyValueSync(getUserId()+"-hyperSimple", hyperSimple);
+              
+              // setKeyValueSync(UserId+"-hyperSimple", hyperSimple);
               var settingJson = JSON.stringify({
                 width:width,
                 height:height,
                 doCenter:doCenter,
                 userPerspective:userPerspective
               });
-              var data = {uuid: getUserId(), settings: settingJson, is_simple:hyperSimple};
-              var is_exists = readRecords("users", {uuid:getUserId()}, function(ret){
-
+              var data = {uuid: UserId, settings: settingJson, is_simple:hyperSimple};
+              var is_exists = readRecords("users", {uuid:UserId}, function(ret){
+              
                 if (ret.length != 0)
                   deleteRecordSync("users", {id: ret[0].id});
                 var x = createRecordSync("users", data);
@@ -699,27 +701,27 @@ function title(goto){
                 deleteElement("viewport");
                 title("settings");
               });
-
-
-
-
+              
+              
+            
+              
             }
           settingsScreen=[
             SHtml("PWL", 10, 100, "<h4>Screen Width:</h4>"),
             SInput("pw", "number", width, width-150, 100),
-
+            
             SHtml("PHL", 10, 130, "<h4>Screen Height:</h4>"),
             SInput("ph", "number", height, width-150, 130),
-
+            
             SHtml("pcenterl", 10, 160, "<h4>Center screen:</h4>"),
             SInput("pcenter", "checkbox", doCenter, width-200, 165),
-
+            
             SHtml("hypersiml", 10, 190, "<h4>Simplifed rendering:</h4>"),
             SInput("hypersim", "checkbox", hyperSimple, width-200, 195),
-
+            
             SHtml("Prenderd", 10, 220, "<h4>Perspective:</h4>"),
             SInput("renderd", "number", userPerspective, width-150, 220),
-
+            
             SButton("SRES", "Reset", width/2 - 125/2, height-95, function(){
               setText("pw", 320);
               setText("ph", 450);
@@ -729,8 +731,8 @@ function title(goto){
               apply();
             }),
             SButton("SAPPLY", "Apply", width/2 - 125/2, height-50, apply),
-
-
+            
+            
             SButton("SBACKS", "Back", -5, height-50, function(){
               disableGroupBtn(settingsScreen);
               enableGroupBtnW(mainScreen);
@@ -738,17 +740,17 @@ function title(goto){
           ];
           setChecked("pcenter", doCenter);
           setChecked("hypersim", hyperSimple);
-
+          
           // Wish I could put this in a better place
           if (goto) enableGroupBtn(({settings: settingsScreen})[goto]);
           else enableGroupBtn(mainScreen);
         });
-
+        
         var worldCusomizeScreen = [
               SHtml("NWWarning", 0, 0, "<i>**World preview not accurate**</i>"),
               SHtml("gameModeDrop", width/2-100, 75, '<select id="gamemodedrop_" style="width: 200px; height: 30px; margin: 0px; border-style: solid; background-color: rgb(255, 255, 255); color: rgb(77, 87, 95); border-color: rgb(0, 0, 0); border-radius: 4px; border-width: 1px;"><option>Creative</option><option>Survival</option><option>Spectator</option></select>'),
               SHtml("gameGenDrop", width/2-100, 108, '<select id="gamegendrop_" style="width: 200px; height: 30px; margin: 0px; border-style: solid; background-color: rgb(255, 255, 255); color: rgb(77, 87, 95); border-color: rgb(0, 0, 0); border-radius: 4px; border-width: 1px;"><option>Superflat</option><option>Perlin</option></select>'),
-
+              
               SButton("SBACKNW2", "Back", -5, height-50, function(){
                 disableGroupBtn(worldCusomizeScreen);
                 enableGroupBtnW(mainScreen);
@@ -760,9 +762,9 @@ function title(goto){
                 if (perlineTimeout) clearTimeout(perlineTimeout);
                 newWorld(getText("NEWWORLDNAME"), getText("gamegendrop_"), ["Creative", "Survival", "Spectator"].indexOf(getText("gamemodedrop_")));
               }, 120),
-
+              
           ];
-
+        
         onEvent("gamegendrop_", "change", function(){
           var value = getText("gamegendrop_");
           if (value == "Superflat"){
@@ -773,27 +775,27 @@ function title(goto){
             rotPoint=perlinRotPoint;
             changePreview(perlinSetup);
           }
-
+          
         })
         function _newWorld(name){
           disableGroupBtn(newWorldScreen);
           enableGroupBtnW(worldCusomizeScreen);
           rotPoint=superflatRotPoint;
           changePreview(superflatSetup);
-
+          
         }
-
+        
         function _newWorldError(text){
             setText("textboxforerrors", text)
             setStyle("textboxforerrors","color: red; transition: opacity 2s; opacity: 1;");
             setStyle("CREATEBTN", baseElementCss.CREATEBTN + "opacity: 0");
-
+            
             setTimeout(function(){
-              setStyle("textboxforerrors","color: red; transition: opacity 2s; opacity: 0;");
+              setStyle("textboxforerrors","color: red; transition: opacity 2s; opacity: 0;");  
               setStyle("CREATEBTN", baseElementCss.CREATEBTN + "opacity: 1");
             }, 5000);
         }
-
+        
         var newWorldScreen = [
             SHtml("NEWWORLDLABEL", width/2-115, height/4, "<div style='font-size: 2em; text-align: center;overflow: visible; '><b style='color: white; '>Name your world:</b></div>"),
             SInput("NEWWORLDNAME","text", "", width/2-115,  height/4+30, 225, 40),
@@ -804,41 +806,41 @@ function title(goto){
               }else if (name.length >= 30){
                 _newWorldError("Name too long.");
               }else{
-                readRecords("users", {uuid: getUserId()}, function(value){
-                  var world = getUserId()+"-world-"+name;
+                readRecords("users", {uuid: UserId}, function(value){
+                  var world = UserId+"-world-"+name;
                   if (JSON.parse((value[0] || {worlds: undefined}).worlds || "[]").indexOf(world) != -1){
                     return _newWorldError("World already exists!");
                   }else{
                     _newWorld(name);
                   }
-
+                  
                 });
 
               }
-
-
+              
+              
             }),
-
+            
             SHtml("ERRBOX", width/2 - 125/2 - 50, height/4+30+40+10, "<div style='font-size: 1.75em; text-align: center;overflow: visible; '><b style='color: red; transition: opacity 2s; opacity: 0;' id='textboxforerrors'>Error text</b></div>"),
-
-
+            
+            
             SButton("SBACKNW", "Back", -5, height-50, function(){
               disableGroupBtn(newWorldScreen);
               enableGroupBtnW(mainScreen);
             }, 60)
         ];
-
+        
         var playWorldScreen = [
           SHtml("kjasi", 10, 80, "<div style='font-size: 1.9em; text-align: center;overflow: visible; '><b style='color: grey; '>Select a world:</b></div>"),
           SHtml("sdjasd", 2, 110, "<div id='world-list' style='text-align: center;overflow-y: scroll;background:#000;opacity: .6; width: "+(width-4)+"px; height: "+(height-120)+"px; '></div>"),
-
-
+          
+          
           SButton("jnasi", "Back", width-70, 69, function(){
               disableGroupBtn(playWorldScreen);
               enableGroupBtnW(mainScreen);
             }, 60)
         ];
-
+        
         var mainScreen = [
           SButton("CWBTN", "Create world", 0, 100, function(){
             disableGroupBtn(mainScreen);
@@ -849,10 +851,10 @@ function title(goto){
             function capitalizeFirstLetter(string) {
               return string.charAt(0).toUpperCase() + string.slice(1);
             }
-
+            
             innerHTML('world-list', '<br>');
-            readRecords("users", {uuid: getUserId()}, function(value_){
-
+            readRecords("users", {uuid: UserId}, function(value_){
+              
               var worlds=JSON.parse((value_[0] || {}).worlds || "[]");
               for (var i=0; i < worlds.length; i++){
                 var name = worlds[i];
@@ -873,10 +875,10 @@ function title(goto){
                     var value = JSON.parse(getKeyValueSync(world));
                     player = value[0];
                     writePerspective(player.x, player.y, player.z, player.rx, player.ry, "", "");
-
+                    
                     var foundPieces = {};
                     var list = [];
-
+                    
                      var onRecive = function(data){
                         var index = data.indexOf("!");
                         var piece = data.substring(0, index)*1;
@@ -887,13 +889,13 @@ function title(goto){
                           for (var ii=0; ii<list.length; ii++){
                             worldlyHtml+=foundPieces[ii];
                           }
-
+                          
                           var blocks = JSON.parse(worldlyHtml);
                           var keys = Object.keys(blocks);
                           for (var blocki = 0; blocki < keys.length; blocki++){
                             var pos = opos = keys[blocki];
                             pos=pos.substring(pos.indexOf("_")+1, pos.length);
-
+                            
                             var x = pos.substring(0, pos.indexOf("_"))*1;
                             pos=pos.substring(pos.indexOf("_")+1, pos.length);
                             var y = pos.substring(0, pos.indexOf("_"))*1;
@@ -901,7 +903,7 @@ function title(goto){
                             SV(BLOCKS[blocks[opos]](x*1, y*1, pos*1));
                           }
                           // deleteElement("test");
-
+                          
                           // innerHTML("viewport", innerViewport);
                         }
                       }
@@ -909,29 +911,29 @@ function title(goto){
                         getKeyValue(ii+"-"+world, onRecive);
                         console.log(ii+"-"+world);
                       }
-
-
-
-
+                    
+                    
+                    
+                    
                    });
                  })
-
+                
                }
-
+              
                enableGroupBtnW(playWorldScreen);
              });
-
-
-
+            
+            
+            
           }),
           SButton("SBTN", "Settings", width/2 - 125/2, height-50, function(){
             disableGroupBtn(mainScreen);
             enableGroupBtnW(settingsScreen);
           })
         ];
+        
 
-
-
+        
 
       },
     "tick_player": function(){
@@ -939,8 +941,8 @@ function title(goto){
           writePerspective(rotPoint[0], rotPoint[1], rotPoint[2], rotPoint[3], rotPoint[4], animate, "rotateY("+(rot+=90)+"deg)"+animate);
           lastRot=Date.now();
         }
-
-
+        
+      
     }
   };
   game();
@@ -949,10 +951,10 @@ function title(goto){
 function newWorld(name, type, gameMode){
   clearInterval(mainInterval);
   deleteElement("viewport");
-
-
-
-
+  
+  
+  
+  
   world_handle(name, function(_ignored){_ignored;
     writePerspective(-600,-600, -600, -0.684, -4, "", "");
     player.gamemode = gameMode;
@@ -961,7 +963,7 @@ function newWorld(name, type, gameMode){
       player.x = 0;
       player.y = -2*24;
       player.z = 0;
-
+      
       for (x = -5; x < 5; x++){
         for (z = -5; z < 5; z++){
           SV(grassBlock(x, 0, z));
@@ -975,8 +977,8 @@ function newWorld(name, type, gameMode){
       var isFirst;
       var min = -5;
       var xoff = Math.floor(Math.random()*4000);
-
-
+      
+      
       // Set player to 0,plerlin+2, 0
       player.x = 0;
       player.y = -2*24 - Math.floor(noise[Math.abs(min)+xoff][Math.abs(min)]*10);
@@ -995,7 +997,7 @@ function newWorld(name, type, gameMode){
               SV(stoneBlock(x, y, z));
           }
           // console.log([x, y, z])
-
+      
       }
       }
     }
@@ -1005,7 +1007,7 @@ function newWorld(name, type, gameMode){
 function world_handle(name, genHtml){
   var isPaused = false;
   var lastEscKey = Date.now();
-
+  
   var pauseScreen = [
     SButton("P-resume", "Resume", width/2-125/2, 100, function(){
       disableGroupBtn(pauseScreen);
@@ -1028,14 +1030,14 @@ function world_handle(name, genHtml){
     }),
     SButton("P-exit-save", "Exit And Save", width/2-125/2, 200, function(){
       disableGroupBtn(pauseScreen);
-
+      
       var worldHtml = JSON.stringify(world.blocks);
       var chunckCount = Math.ceil(worldHtml.length/2000);
       console.log("Saving with "+chunckCount+" chuncks");
       var chuncks = [];
       var nil=function(){};
-      var sname = (name.indexOf(getUserId()) != -1) ? name : getUserId()+"-world-"+name;
-
+      var sname = (name.indexOf(UserId) != -1) ? name : UserId+"-world-"+name;
+      
       for (var i = 0; i < chunckCount; i++){
         var base = (i)*2000;
         var toward = Math.min(worldHtml.length, (i+1)*2000);
@@ -1044,41 +1046,41 @@ function world_handle(name, genHtml){
         setKeyValue(cname, i+"!"+worldHtml.substring(base, toward), nil);
         chuncks.push(cname);
       }
-
-
+      
+      
       setKeyValueSync(sname, JSON.stringify([player, chuncks.length]));
-
-      readRecords("users", {uuid: getUserId()}, function(value){
+      
+      readRecords("users", {uuid: UserId}, function(value){
         var exists = value.length;
         value = value[0];
         if (exists) deleteRecordSync("users", {id: value.id});
-
-        if (value == undefined) value = {uuid: getUserId()};
-
+        
+        if (value == undefined) value = {uuid: UserId};
+        
         var worlds =JSON.parse(value.worlds || "[]");
         if (worlds.indexOf(sname) == -1) worlds.push(sname);;
-
+        
         value.worlds = JSON.stringify(worlds);
-
-
-
+        
+        
+        
         delete value.id;
         createRecordSync("users", value);
-
-
+        
+        
       });
-      // var worlds = JSON.parse(getKeyValueSync(getUserId()+"-worlds") || "[]");
+      // var worlds = JSON.parse(getKeyValueSync(UserId+"-worlds") || "[]");
       // worlds.push(name);
       // setKeyValueSync("worlds", JSON.stringify(worlds));
       clearInterval(mainInterval);
       deleteElement("viewport");
       title();
     })
-
+    
   ];
-
-
-
+  
+  
+  
   world = {"do_player": true, "world_get": function(){
     genHtml(name);
   }, "pressKey": function(key){
@@ -1086,17 +1088,16 @@ function world_handle(name, genHtml){
       if (!isPaused) pressing = {w:false, a:false,s:false, d:false, "Shift": false, " ": false};
       isPaused = !isPaused;
       lastEscKey=Date.now();
-
+      
       if (isPaused) enableGroupBtn(pauseScreen);
       if (!isPaused) disableGroupBtn(pauseScreen);
     }
-
+    
     if (isPaused) return true;
-
+    
   }};
   game();
 }
 title();
-
 
 
