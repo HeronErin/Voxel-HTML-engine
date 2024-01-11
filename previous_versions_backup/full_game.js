@@ -35,7 +35,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+ 
 
 
 var UserId = getUserId().replace(/\//g, "SLASH");
@@ -176,53 +176,53 @@ var lastDisplayedBlock;
 
 // Keep pressing up to date
 onEvent("mainGame", "keydown", function(event) {
-  if (world.pressKey) if (world.pressKey(event.key)) return;
-  pressing[event.key] = true;
-  
-  if ("123456789".includes(event.key)){
-    if (lastSel) _resetSel();
-    lastSel=undefined;
+	if (world.pressKey) if (world.pressKey(event.key)) return;
+	pressing[event.key] = true;
+	
+	if ("123456789".includes(event.key)){
+	  if (lastSel) _resetSel();
+	  lastSel=undefined;
     if (event.key*1 < BLOCKS.length)
       if (BLOCKS[event.key*1])
         player.currentBlock=event.key*1;
-  }
-  if (event.key=="Enter"&&lastSel!=undefined){
-    if (player.currentBlock < BLOCKS.length){
+	}
+	if (event.key=="Enter"&&lastSel!=undefined){
+	  if (player.currentBlock < BLOCKS.length){
+	    
+	    var func = BLOCKS[player.currentBlock];
+	    if (func){
+	      console.log([lastSelP[3], lastSelP[4], lastSelP[5]]);
+	      var id = func(lastSelP[3], lastSelP[4], lastSelP[5]);
+	      SV(id);
+	      types[id] = player["currentBlock"];
       
-      var func = BLOCKS[player.currentBlock];
-      if (func){
-        console.log([lastSelP[3], lastSelP[4], lastSelP[5]]);
-        var id = func(lastSelP[3], lastSelP[4], lastSelP[5]);
-        SV(id);
-        types[id] = player["currentBlock"];
-      
-      };
-      _resetSel();
+	    };
+	    _resetSel();
       types[id] = player.currentBlock;
       
-    }
-  }
-  
-  if (event.key=="Del"&&lastSel!=undefined){
+	  }
+	}
+	
+	if (event.key=="Del"&&lastSel!=undefined){
     
-    if (blockExists(lastSelP[0], lastSelP[1], lastSelP[2])){
-      var id = "B_"+lastSelP[0]+"_"+lastSelP[1]+"_"+lastSelP[2];
-     
-      decullBlockNeighbors(lastSelP[0], lastSelP[1], lastSelP[2]);
-      delete world.block[id];
-      delete types[id];
-      
-      deleteElement(id); 
-      _resetSel();
-    }
-  }
-  
+	  if (blockExists(lastSelP[0], lastSelP[1], lastSelP[2])){
+	    var id = "B_"+lastSelP[0]+"_"+lastSelP[1]+"_"+lastSelP[2];
+	   
+	    decullBlockNeighbors(lastSelP[0], lastSelP[1], lastSelP[2]);
+	    delete world.block[id];
+	    delete types[id];
+	    
+	    deleteElement(id); 
+	    _resetSel();
+	  }
+	}
+	
 
-  
-  
+	
+	
 });
 onEvent("mainGame", "keyup", function(event) {
-  pressing[event.key] = false;
+	pressing[event.key] = false;
   if (player.gamemode == 0 && event.key == " " && Date.now()-lastSpace > 25){
     
     if (Date.now()-lastSpace < 250){
@@ -341,7 +341,17 @@ var SelTemplate = ""+
   '<div id="{id}_U" style="backface-visibility: visible; transform-origin: 0px 0px 0px; background:#FFF9; overflow: visible; width: 26px; height: 26px; position: absolute; transform-style: preserve-3d; transform: translate3d(-1px, -1px, -13px) rotateX(90deg) "></div>'+
   '<div id="{id}_D" style="backface-visibility: visible; transform-origin: 0px 0px 0px; background:#FFF9; overflow: visible; width: 26px; height: 26px; position: absolute; transform-style: preserve-3d; transform: translate3d(-1px, 25px, 13px) rotateX(270deg)"></div>';
 
+var WoodBlockTemplate = BlockTemplate.replace(
+  /{img}/g,
+  ( !hyperSimple ? '<img src="https://github.com/HeronErin/Voxel-HTML-engine/blob/main/imgs/wood.png?raw=true" style="image-rendering: pixelated; position:relative; left: -5px; top: -5px; border:none, outline: none; width: 24px; height: 24px;"/> ' : 
+  "<div style='width: 100%; height: 100%; background: #a27c33'></div>")
+);
 
+var LeafBlockTemplate = BlockTemplate.replace(
+  /{img}/g,
+  ( !hyperSimple ? '<img src="https://github.com/HeronErin/Voxel-HTML-engine/blob/main/imgs/leaf.png?raw=true" style="image-rendering: pixelated; position:relative; left: -5px; top: -5px; border:none, outline: none; width: 24px; height: 24px;"/> ' : 
+  "<div style='width: 100%; height: 100%; background: #0f8700'></div>")
+);
 
 
 
@@ -357,14 +367,24 @@ stoneBlock= function(x, y, z, B){
   return t;
 };
 dirtBlock= function(x, y, z, B){
-  
   var t = _block(x, y, z, DirtBlockTemplate, B);
   types[t] = 3;
   return t;
 };
 
+var woodBlock= function(x, y, z, B){
+  var t = _block(x, y, z, WoodBlockTemplate, B);
+  types[t] = 4;
+  return t;
+};
+var leafBlock= function(x, y, z, B){
+  var t = _block(x, y, z, LeafBlockTemplate, B);
+  types[t] = 5;
+  return t;
+};
 
-BLOCKS = [undefined, grassBlock, stoneBlock, dirtBlock];
+
+BLOCKS = [undefined, grassBlock, stoneBlock, dirtBlock, woodBlock, leafBlock, undefined];
 
 
 
@@ -687,6 +707,7 @@ function title(goto){
           
           hyperSimple = (value_[0]||{}).is_simple==true;
           
+          
           resetScreenSize();
           
           
@@ -706,9 +727,11 @@ function title(goto){
               });
               var data = {uuid: UserId, settings: settingJson, is_simple:hyperSimple};
               var is_exists = readRecords("users", {uuid:UserId}, function(ret){
-              
-                if (ret.length != 0)
+                
+                if (ret.length != 0){
+                  data.worlds = ret[0].worlds;
                   deleteRecordSync("users", {id: ret[0].id});
+                }
                 var x = createRecordSync("users", data);
                 clearInterval(mainInterval);
                 deleteElement("viewport");
